@@ -2,9 +2,9 @@
 
 ## Project Status
 
-Early-stage greenfield rewrite. `src/` contains only the Vite scaffold (HelloWorld). The real application architecture is being built out.
+**Rewrite complete.** v2 is a fully functional Vue 3 + Tailwind CSS v4 rewrite of lms-v1 with all pages migrated.
 
-`lms-v1-old/` is the prior version for reference — it has vue-router, axios, echarts, and 17 view pages for an LMS (schools, courses, students, teachers, leaves, audits, etc.). Do not import from it; use it only as a reference for business logic and data models.
+`lms-v1-old/` is the prior version for reference only. Do not import from it.
 
 ## Stack
 
@@ -46,18 +46,40 @@ No `@` alias is configured (unlike v1). Use relative imports. If an alias is add
 
 ## API / Backend
 
-v1 proxied `/api` to `http://localhost:8000`. v2 has no proxy configured yet. When adding API integration, configure the Vite proxy in `vite.config.ts` and use `VITE_`-prefixed env variables for backend URLs.
+v2 proxies `/api` to `http://localhost:8000/api/v1` via Vite dev server. Env vars in `.env` (dev) and `.env.production` (prod → `https://lms.gxj62.cn/api/v1`).
 
-## What v1 Had (migration reference)
+## Architecture
 
-| Feature | v1 Location |
-|---------|------------|
-| Router | `lms-v1-old/src/router/index.ts` |
-| API client (axios) | `lms-v1-old/src/api/index.ts` |
-| Composables | `lms-v1-old/src/composables/useApiData.ts`, `usePagedData.ts`, `useNavigation.ts` |
-| Views (17 pages) | `lms-v1-old/src/views/` |
-| Global styles | `lms-v1-old/src/styles/global.css` |
-| Prod env | `lms-v1-old/.env.production` → `VITE_API_BASE_URL=https://lms.gxj62.cn/api/v1` |
+| Layer | Files |
+|-------|-------|
+| Router + guards | `src/router/index.ts` |
+| API modules | `src/api/auth.ts`, `students.ts`, `leaves.ts`, `reviewers.ts`, `statistics.ts`, `notifications.ts`, `common.ts` |
+| Pinia stores | `src/stores/auth.ts`, `notification.ts` |
+| Types | `src/types/index.ts` |
+| Utils | `src/utils/http.ts`, `auth.ts`, `formatters.ts`, `excelExporter.ts` |
+| Layout | `src/layouts/AppLayout.vue` (sidebar navigation) |
+| Components | `src/components/Modal.vue`, `DataTable.vue`, `PaginationBar.vue`, `StatsCard.vue`, `Toast.vue` |
+| Composables | `src/composables/useToast.ts` |
+
+## Views (15 pages)
+
+| Route | Component | Description |
+|-------|-----------|-------------|
+| `/admin/setup` | InitialSetupView | DB config + admin creation (first run) |
+| `/login` | LoginView | Password + QR code login |
+| `/` | HomePage | Dashboard with role-based feature cards |
+| `/students` | StudentsList | Paged student list, import, password change |
+| `/teachers` | TeachersList | Paged teacher list, import, password change |
+| `/reviewers` | ReviewersList | Paged reviewer list, import, password change |
+| `/courses` | CoursesList | Paged course list, import, view students |
+| `/courses/:id/students` | CourseStudentsView | Students enrolled in a course |
+| `/schools` | SchoolsList | Department list, create, import |
+| `/leaves` | LeavesList | Core business: edit/audit/cancel/close-off/guarantee/QR |
+| `/audit-logs` | AuditLogsList | Filtered audit log with Excel export |
+| `/statistics` | StatisticsView | Chart.js charts: pie, line, bar |
+| `/notifications` | NotificationsView | Notification list with read/unread filters |
+| `/verify-qr` | VerifyQRView | Camera + manual QR verification (public) |
+| `/profile` | ProfileView | User info, name edit, password change, device auth |
 
 ## Behavioral Guidelines
 
